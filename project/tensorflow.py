@@ -29,8 +29,6 @@ def label_map_to_indexed_categories(path):
     except text_format.ParseError:
         label_map.ParseFromString(label_map_string)
 
-    # The label map is 1-indexed, so we need to add a dummy entry to
-    # pad it out
     return {
         l.id: l.display_name
         for l in label_map.item

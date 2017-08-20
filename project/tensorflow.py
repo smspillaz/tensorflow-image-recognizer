@@ -14,7 +14,6 @@ import numpy as np
 import tensorflow as tf
 
 from google.protobuf import text_format
-from object_detection.utils import label_map_util
 from PIL import Image
 from project.proto import string_int_label_map_pb2
 

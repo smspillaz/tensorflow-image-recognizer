@@ -90,12 +90,49 @@ def setup_detection_graph_from_pretrained_net(net_path):
     return detection_graph
 
 
+MAX_IMAGE_BOUNDS = (1080, 90)
+
+
+def intify(*args):
+    """Convert all numbers in the tuple into integers."""
+    return tuple([int(i) for i in args])
+
+
+def resize_image_to_fit_within_bounds(image, bounds):
+    """Resizes an image to fit within the given bounds, maintaining aspect."""
+    image_width, image_height = image.size
+    bounds_width, bounds_height = bounds
+
+    # Nothing to do
+    if image_width < bounds_width and image_height < bounds_height:
+        return image
+
+    image_aspect = image_width / image_height
+
+    # First, try and fit it within the width
+    if image_width > bounds_width:
+        image.resize(intify(bounds_width, bounds_width / image_aspect),
+                     Image.ANTIALIAS)
+
+    # Determine new sizes
+    image_width, image_height = image.size
+
+    # If it doesn't fit within the height, then resize it
+    if image_height > bounds_height:
+        image.resize(intify(bounds_height * image_aspect, bounds_height),
+                     Image.ANTIALIAS)
+
+    return image
+
+
 def images_to_detection_results(detection_graph, image_paths, tolerance=0.8):
     """Given some images and a detection_graph, get detection results."""
     with detection_graph.as_default():
         with tf.Session(graph=detection_graph) as sess:
             for image_path in image_paths:
                 image = Image.open(image_path)
+                image = resize_image_to_fit_within_bounds(image,
+                                                          MAX_IMAGE_BOUNDS)
                 image_np = load_image_into_numpy_array(image)
                 for result in detect_objects(image_np,
                                              sess,
